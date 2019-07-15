@@ -30,3 +30,10 @@
 *.exe
 *.out
 *.app
+
+
+*.tar.gz
+*.tar.xz
+*.tar.bz2
+
+task0_env/

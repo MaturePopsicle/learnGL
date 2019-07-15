@@ -1,0 +1,4 @@
+glm_all/
+glm/detail/
+*.cpp
+*.inl
