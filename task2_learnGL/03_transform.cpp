@@ -1,8 +1,8 @@
 
 #include <iostream>
-#include "../includes/glm/glm.hpp"
-#include "../includes/glm/gtc/matrix_transform.hpp"
-#include "../includes/glm/gtc/type_ptr.hpp"
+#include "./third_part_src/glm/glm.hpp"
+#include "./third_part_src/glm/gtc/matrix_transform.hpp"
+#include "./third_part_src/glm/gtc/type_ptr.hpp"
 
 using namespace std;
 
@@ -14,28 +14,11 @@ using namespace std;
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#if 1
 /**
  * just for test glm lib
  */
-int main_teslGLM()
+int main()
 {
     glm::vec4 vec(1.0f, 0, 0, 1.0f);
 
@@ -48,3 +31,4 @@ int main_teslGLM()
 
     return 0;
 }
+#endif
