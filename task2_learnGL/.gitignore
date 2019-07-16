@@ -1,0 +1,4 @@
+output/
+*.o
+*.out
+*.bin
