@@ -15,10 +15,7 @@ if [ ! -n "$1" ] ;then
     usage
     exit 1
 else
-    g++ -o $1 $1.cpp ./third_part_src/glad.c ./tools_src/shader.cpp -lglfw3 -lGL -lm -lXrandr -lXi -lX11 -lXxf86vm -lpthread -ldl -lXinerama -lXcursor
+    g++ -o $1.out $1.cpp ../third_part_src/glad.c ../tools_src/shader.cpp -lglfw3 -lGL -lm -lXrandr -lXi -lX11 -lXxf86vm -lpthread -ldl -lXinerama -lXcursor
 fi
 
-if [ $? = 0 ]; then
-    mv $1 ./output
-    # ./output/$1
-fi
+
