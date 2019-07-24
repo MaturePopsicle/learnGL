@@ -15,7 +15,7 @@ if [ ! -n "$1" ] ;then
     usage
     exit 1
 else
-    g++ -o $1.out $1.cpp ../third_part_src/glad.c ../tools_src/shader.cpp -lglfw3 -lGL -lm -lXrandr -lXi -lX11 -lXxf86vm -lpthread -ldl -lXinerama -lXcursor -lassimp
+    g++ -o $1.out $1.cpp ../../third_part_src/glad.c -lglfw3 -lGL -lm -lXrandr -lXi -lX11 -lXxf86vm -lpthread -ldl -lXinerama -lXcursor -lassimp
 fi
 
 
