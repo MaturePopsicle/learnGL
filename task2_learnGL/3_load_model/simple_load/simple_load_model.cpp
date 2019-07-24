@@ -123,6 +123,7 @@ int main(int argc, char** argv)
 	//Section1 从obj文件加载数据
 	std::vector<Vertex> vertData;
 	if (!ObjLoader::loadFromFile("../cube/cube.obj", vertData))
+	//if (!ObjLoader::loadFromFile("./car3da.obj", vertData))
 	{
 		std::cerr << "Could not load obj model, exit now.";
 		std::system("pause");

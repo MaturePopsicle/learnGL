@@ -68,7 +68,8 @@ int main()
     Shader ourShader("shader.vs", "shader.fs");
 
     // load models
-    Model ourModel("resources/objects/nanosuit/nanosuit.obj");
+    Model ourModel("./nanosuit.obj");
+    // Model ourModel("./car3da.obj");
 
     
     // draw in wireframe
@@ -86,7 +87,7 @@ int main()
         processInput(window);
 
         // render
-        glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
+        glClearColor(0.05f, 0.5f, 0.05f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // don't forget to enable shader before setting uniforms

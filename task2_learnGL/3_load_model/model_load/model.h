@@ -5,10 +5,18 @@
 
 #include "../../third_part_src/glm/glm.hpp"
 #include "../../third_part_src/glm/gtc/matrix_transform.hpp"
+
+#define STB_IMAGE_IMPLEMENTATION
 #include "../../third_part_src/stb_image.h"
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
+//#include "./stb_image.h"
+
+// #include <assimp/Importer.hpp>
+// #include <assimp/scene.h>
+// #include <assimp/postprocess.h>
+#include "/usr/local/include/assimp/Importer.hpp"
+#include "/usr/local/include/assimp/scene.h"
+#include "/usr/local/include/assimp/postprocess.h"
+
 
 #include "mesh.h"
 #include "shader.h"
@@ -21,7 +29,11 @@
 #include <vector>
 using namespace std;
 
+#define LOAD_TEXTURE
+
+#ifdef LOAD_TEXTURE
 unsigned int TextureFromFile(const char *path, const string &directory, bool gamma = false);
+#endif
 
 class Model 
 {
@@ -203,7 +215,7 @@ private:
     }
 };
 
-
+#ifdef LOAD_TEXTURE
 unsigned int TextureFromFile(const char *path, const string &directory, bool gamma)
 {
     string filename = string(path);
@@ -243,4 +255,7 @@ unsigned int TextureFromFile(const char *path, const string &directory, bool gam
 
     return textureID;
 }
+#endif
+
+
 #endif
