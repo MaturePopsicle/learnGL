@@ -22,8 +22,6 @@
 
 //#define LOAD_RABIT
 #define LOAD_CAR
-#define DBG_CODE
-//#define ALL_LAOD
 
 
 // 包含着色器加载库
@@ -70,11 +68,11 @@ GLfloat lastFrame = 0.0f; // 上一帧时间
 Camera camera(glm::vec3(0.0f, 0.0f, 10.0f));
 
 
-#ifdef DBG_CODE
-glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3000.0f);
+
+glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 6000.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
-#endif
+
 
 int main(int argc, char** argv)
 {
@@ -144,7 +142,7 @@ int main(int argc, char** argv)
 	// if (!ObjLoader::loadFromFile("../cube/cube.obj", vertData))
 	// if (!ObjLoader::loadFromFile("./nanosuit.obj", vertData))
 #ifdef LOAD_CAR
-	if (!ObjLoader::loadFromFile("./models/car/car3da.obj", vertData))
+	if (!ObjLoader::loadFromFile("./models/car/car3dw.obj", vertData))
 #endif
 #ifdef LOAD_RABIT
 	if (!ObjLoader::loadFromFile("./models/Rabbit/Rabbit.obj", vertData))
@@ -273,7 +271,7 @@ int main(int argc, char** argv)
 #endif
 #endif
 
-#ifdef DBG_CODE
+
      	glm::mat4 view;
         view = glm::lookAt(cameraPos, cameraPos+cameraFront, cameraUp);
         glm::mat4 projection;
@@ -284,12 +282,12 @@ int main(int argc, char** argv)
         unsigned int projeLoc = glGetUniformLocation(shader.programId, "projection");
         glUniformMatrix4fv(projeLoc, 1, GL_FALSE, &projection[0][0]);
 
-        glm::mat4 model;
-        //model = glm::translate(model, cubePositions[i]);
-        float angle = 20.0f;
-        model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-        model = glm::rotate(model, glm::radians(-60.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        // glm::mat4 model;
+        // //model = glm::translate(model, cubePositions[i]);
+        // float angle = 20.0f;
+        // model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+        // model = glm::rotate(model, glm::radians(-60.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        // model = glm::rotate(model, glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
 
         //add transform mat4
         // glm::vec3 wheel_RF(835.979f, 1535.782f, 345.872f);
@@ -301,25 +299,30 @@ int main(int argc, char** argv)
         //model = glm::rotate(model, (float)glfwGetTime() * glm::radians(-60.0f),
         //	glm::vec3(0.0f, 0.0f, 1.0f));
         //model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
-        unsigned int modelLoc = glGetUniformLocation(shader.programId, "model");
-        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
-#endif
 
-		glUniformMatrix4fv(glGetUniformLocation(shader.programId, "model"),
-			1, GL_FALSE, glm::value_ptr(model));
+        for(int i=0; i < 4; i++)
+        {
+        	glm::mat4 model;
+        	model = glm::translate(model, wheel_positions[i]);
+        	model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+        	unsigned int modelLoc = glGetUniformLocation(shader.programId, "model");
+        	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
 
-		glBindVertexArray(0);
-#ifdef ALL_LAOD
-		//glBindVertexArray(VAO_light);
-		//glDrawArrays(GL_TRIANGLES, 0, vertData_light.size());
-		glBindVertexArray(VAO_wheel);
-		glDrawArrays(GL_TRIANGLES, 0, vertData_wheel.size());
-#endif
-		glUseProgram(0);
+
+        	//mesh.draw(shader); // 绘制物体
+        	glBindVertexArray(mesh.VAOId);
+        	glDrawArrays(GL_TRIANGLES, 0, vertData.size());
+        }
+
+
+		// glUniformMatrix4fv(glGetUniformLocation(shader.programId, "model"),
+		// 	1, GL_FALSE, glm::value_ptr(model));
+
 		// 这里填写场景绘制代码
-		mesh.draw(shader); // 绘制物体
+		// mesh.draw(shader); // 绘制物体
 
 		glfwSwapBuffers(window); // 交换缓存
+		glfwPollEvents();
 	}
 	// 释放资源
 	glfwTerminate();
