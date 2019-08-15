@@ -6,23 +6,40 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "../../third_part_src/stb_image.h"
 
+
 #include "../../third_part_src/glm/glm.hpp"
 #include "../../third_part_src/glm/gtc/matrix_transform.hpp"
 #include "../../third_part_src/glm/gtc/type_ptr.hpp"
-
 
 using namespace std;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
+void mouse_callback(GLFWwindow *window, double xpos, double ypos);
+void scroll_callback(GLFWwindow *window, double xoffset, double yoffset);
+
 
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
+glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+//-----------------
+float lastX = 400;
+float lastY = 300;
+//-----------------
+float pitch = 0.0f;
+float yaw = -90.0f;
+float fov = 45.0f;
+//-----------------
+bool firstMouse = true;
 
 
-int main()
+
+
+int main(int argc, char *argv[])
 {
     // glfw: initialize and configure
     // ------------------------------
@@ -42,6 +59,8 @@ int main()
     }
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetScrollCallback(window, scroll_callback);
 
     // glad: load all OpenGL function pointers
     // ---------------------------------------
@@ -54,7 +73,7 @@ int main()
     //设置线框模式
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-    Shader *m_shader = new Shader("./shader.vs", "./shader.fs");
+    Shader *m_shader = new Shader("./shader_beta.vs", "./shader_beta.fs");
     unsigned int shaderProgram = m_shader->getProgramID();
     cout << "shader program: " << shaderProgram << endl;
 
@@ -63,12 +82,12 @@ int main()
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
     float vertices[] = {
-//     ---- 位置 ----   - 纹理坐标 -
-     0.5f,  0.5f, 0.0f, 1.0f, 1.0f,   // 右上
-     0.5f, -0.5f, 0.0f, 1.0f, 0.0f,   // 右下
-    -0.5f, -0.5f, 0.0f, 0.0f, 0.0f,   // 左下
-    -0.5f,  0.5f, 0.0f, 0.0f, 1.0f    // 左上
-};
+//     ---- 位置 ----       ---- 颜色 ----     - 纹理坐标 -
+     0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // 右上
+     0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // 右下
+    -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // 左下
+    -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // 左上
+    };
 
 
 
@@ -81,10 +100,10 @@ int main()
     unsigned int VAO;//顶点数组对象 vertex array objects
     unsigned int EBO;//索引缓冲对象 element buffer object
     glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
+    //glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
     
-    //glGenBuffers(1, &VBO);//生成一个VBO对象
+    glGenBuffers(1, &VBO);//生成一个VBO对象
     // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);//将新创建的缓冲绑定到GL_ARRAY_BUFFER目标上
@@ -97,21 +116,25 @@ int main()
 
     //位置属性
     //告诉opengl如何解析顶点数据，设置顶点属性指针
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
     //启用顶点属性，默认是禁用的
     glEnableVertexAttribArray(0);
     //颜色属性
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3*sizeof(float)));
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3*sizeof(float)));
     glEnableVertexAttribArray(1);
     // note that this is allowed, the call to glVertexAttribPointer registered VBO as the vertex attribute's bound vertex buffer object so afterwards we can safely unbind
     //复制顶点数组到缓冲中供opengl使用
     //glBindBuffer(GL_ARRAY_BUFFER, 0); 
     //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
+    //for texture
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(6*sizeof(float)));
+    glEnableVertexAttribArray(2);
+
     // about texture
-    unsigned int texture1, texture2;
-    glGenTextures(1, &texture1);
-    glBindTexture(GL_TEXTURE_2D, texture1);
+    unsigned int texture, texture2;
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_2D, texture);
     
     // set texture
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -145,10 +168,8 @@ int main()
     else {
         cout << "failed to load texture" << endl;
     }
-    stbi_image_free(data);
 
     m_shader->use();
-    m_shader->setInt("ourTexture1", 0);
     m_shader->setInt("ourTexture2", 1);
     
 
@@ -156,6 +177,14 @@ int main()
 /**********************************************/
 
 
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, texture2);
+
+    glBindVertexArray(VAO);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
     // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
     // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
@@ -173,29 +202,49 @@ int main()
     while (!glfwWindowShouldClose(window))
     {
         // input
+        // -----
         processInput(window);
-        // clear window
+
+        // render
+        // ------
         glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture1);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, texture2);
+        float radius = 20.0f;
+        float camX = sin(glfwGetTime()) * radius;
+        float camZ = cos(glfwGetTime()) * radius;
+        glm::mat4 view;
 
-        glm::mat4 trans;
-        #if 0
-        trans = glm::rotate(trans, glm::radians(90.0f), glm::vec3(0.0, 0.0, 1.0));
-        trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5)); 
-        #else
-        trans = glm::translate(trans, glm::vec3(0.5f, -0.5f,0.0f));
-        trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
-        #endif
+        view = glm::lookAt(cameraPos, cameraPos+cameraFront, cameraUp);
+        glm::mat4 projection;
+        //projection = glm::perspective(glm::radians(45.0f), 800.0f/600.0f, 0.1f, 100.0f);
+        projection = glm::perspective(glm::radians(fov), 800.0f/600.0f, 0.1f, 100.0f);
 
+        unsigned int viewLoc = glGetUniformLocation(m_shader->ID, "view");
+        glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
+        unsigned int projeLoc = glGetUniformLocation(m_shader->ID, "projection");
+        glUniformMatrix4fv(projeLoc, 1, GL_FALSE, &projection[0][0]);   
+
+        glm::mat4 model;
+        //model = glm::translate(model, cubePositions[i]);
+        float angle = 20.0f;
+        model = glm::rotate(model, (float)glfwGetTime() * glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+        //model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
+        unsigned int modelLoc = glGetUniformLocation(m_shader->ID, "model");
+        glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+
+#if 0
+        //add for uniform 
+        float timeValue = glfwGetTime();
+        float greenValue = (sin(timeValue)/2.0f)+0.5f;
+        int vertexColorLocation = glGetUniformLocation(shaderProgram, "testColor");
+        glUseProgram(shaderProgram);
+        glUniform4f(vertexColorLocation, 0.0f, greenValue, 0.0f, 1.0f);
+#else
+        // draw our first triangle
+        glUseProgram(shaderProgram);
+#endif
         m_shader->use();
-
-        unsigned int transformLoc = glGetUniformLocation(m_shader->ID, "transform");
-        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans));
 
         glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
         //glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -227,6 +276,20 @@ void processInput(GLFWwindow *window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+
+    float cameraSpeed = 0.05f;
+    if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) {
+        cameraPos += cameraSpeed * cameraFront;
+    }
+    if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) {
+        cameraPos -= cameraSpeed * cameraFront;
+    }
+    if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) {
+        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    }
+    if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) {
+        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * cameraSpeed;
+    }
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -236,4 +299,54 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     // make sure the viewport matches the new window dimensions; note that width and 
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
+}
+
+
+void mouse_callback(GLFWwindow *window, double xpos, double ypos)
+{
+    if(firstMouse) {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+    // printf("(%f, %f)\n", xpos, ypos);
+#if 1
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos; //注意这里是相反的，因为y坐标是从底部往顶部依次增大的
+    lastX = xpos;
+    lastY = ypos;
+
+    float sensitivity = 0.05f;
+    xoffset *= sensitivity;
+    yoffset *= sensitivity;
+
+    yaw += xoffset;
+    pitch += yoffset;
+
+    if(pitch > 89.0f) {
+        pitch = 89.0f;
+    }
+    if(pitch < -89.0f) {
+        pitch = -89.0f;
+    }
+
+    glm::vec3 front;
+    front.x = cos(glm::radians(pitch)) * cos(glm::radians(yaw));
+    front.y = sin(glm::radians(pitch));
+    front.z = cos(glm::radians(pitch)) * sin(glm::radians(yaw));
+    cameraFront = glm::normalize(front);
+#endif
+}
+
+void scroll_callback(GLFWwindow *window, double xoffset, double yoffset)
+{
+    if(fov >= 1.0f && fov <= 45.0f) {
+        fov -= yoffset;
+    }
+    if(fov <= 1.0f) {
+        fov = 1.0f;
+    }
+    if(fov >= 45.0f) {
+        fov = 45.0f;
+    }
 }

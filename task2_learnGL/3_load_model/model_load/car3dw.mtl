@@ -1,5 +1,5 @@
 # 3ds Max Wavefront OBJ Exporter v0.97b - (c)2007 guruware
-# ´´½¨µÄÎÄ¼þ:21.03.2018 10:05:47
+# åˆ›å»ºçš„æ–‡ä»¶:21.03.2018 10:09:22
 
 newmtl Material__29
 	Ns 54.0000
@@ -12,5 +12,5 @@ newmtl Material__29
 	Kd 0.5880 0.5880 0.5880
 	Ks 0.7110 0.7110 0.7110
 	Ke 0.0000 0.0000 0.0000
-	map_Ka ..\2017¸Ä¿î£¨kc-1b 360 ¶¯»­£©\qichen.jpg
-	map_Kd ..\2017¸Ä¿î£¨kc-1b 360 ¶¯»­£©\qichen.jpg
+	map_Ka ./qicheng.png
+	map_Kd ./qicheng.png

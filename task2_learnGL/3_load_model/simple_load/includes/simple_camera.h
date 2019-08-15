@@ -4,9 +4,9 @@
 
 #include <iostream>
 #include <fstream>
-#include "../../third_part_src/glm/glm.hpp"
-#include "../../third_part_src/glm/gtc/matrix_transform.hpp"
-#include "../../third_part_src/glm/gtx/string_cast.hpp"
+#include "../../../third_part_src/glm/glm.hpp"
+#include "../../../third_part_src/glm/gtc/matrix_transform.hpp"
+#include "../../../third_part_src/glm/gtx/string_cast.hpp"
 #include <glad/glad.h>
 
 #include <iomanip>      // std::setprecision
@@ -19,20 +19,20 @@ enum Camera_Movement {
 };
 // 定义预设常量
 const GLfloat YAW = 0.0f;
-const GLfloat PITCH = 0.0f;
+const GLfloat PITCH = 10.0f;
 const GLfloat SPEED = 2.0f;
-const GLfloat MOUSE_SENSITIVTY = 0.005f;
-const GLfloat MOUSE_ZOOM = 45.0f;
+const GLfloat MOUSE_SENSITIVTY = 0.05f;
+const GLfloat MOUSE_ZOOM = 999.0f;
 const float  MAX_PITCH_ANGLE = 89.0f; // 防止万向锁
 
 class Camera
 {
 public:
-	Camera(glm::vec3 pos = glm::vec3(0.0, 0.0, 2.0),
+	Camera(glm::vec3 pos = glm::vec3(0.0, 0.0, 1000.0),
 		glm::vec3 up = glm::vec3(0.0, 1.0, 0.0),
-		GLfloat yaw = YAW, GLfloat pitch = PITCH) 
+		GLfloat yaw = YAW, GLfloat pitch = PITCH)
 		:position(pos), forward(0.0, 0.0, -1.0), viewUp(up),
-		moveSpeed(SPEED), mouse_zoom(MOUSE_ZOOM), mouse_sensitivity(MOUSE_SENSITIVTY),
+		moveSpeed(SPEED), mouse_zoom(45.0f), mouse_sensitivity(MOUSE_SENSITIVTY),
 		yawAngle(yaw), pitchAngle(pitch)
 	{
 		this->updateCameraVectors();
@@ -68,7 +68,7 @@ public:
 	// 处理鼠标移动
 	void handleMouseMove(GLfloat xoffset, GLfloat yoffset)
 	{
-		
+
 		xoffset *= this->mouse_sensitivity; // 用鼠标灵敏度调节角度变换
 		yoffset *= this->mouse_sensitivity;
 
@@ -85,8 +85,8 @@ public:
 			this->mouse_zoom -= this->mouse_sensitivity * yoffset;
 		if (this->mouse_zoom <= 1.0f)
 			this->mouse_zoom = 1.0f;
-		if (this->mouse_zoom >= 45.0f)
-			this->mouse_zoom = 45.0f;
+		if (this->mouse_zoom >= MOUSE_ZOOM)
+			this->mouse_zoom = MOUSE_ZOOM;
 	}
 	// 使pitch yaw角度保持在合理范围内
 	void normalizeAngle()
@@ -106,7 +106,7 @@ public:
 		forward.y = sin(glm::radians(this->pitchAngle));
 		forward.z = -cos(glm::radians(this->yawAngle)) * cos(glm::radians(this->pitchAngle));
 		this->forward = glm::normalize(forward);
-		
+
 		glm::vec3 side;
 		side.x = cos(glm::radians(this->yawAngle));
 		side.y = 0;

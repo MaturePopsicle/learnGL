@@ -2,9 +2,9 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <cmath>
-#include "../tools_src/shader.h"
+#include "../../tools_src/shader.h"
 #define STB_IMAGE_IMPLEMENTATION
-#include "../third_part_src/stb_image.h"
+#include "../../third_part_src/stb_image.h"
 
 
 using namespace std;
@@ -64,7 +64,7 @@ int main()
      0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // 右下
     -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // 左下
     -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // 左上
-};
+    };
 
 
 
@@ -77,10 +77,10 @@ int main()
     unsigned int VAO;//顶点数组对象 vertex array objects
     unsigned int EBO;//索引缓冲对象 element buffer object
     glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
+    //glGenBuffers(1, &VBO);
     glGenBuffers(1, &EBO);
     
-    //glGenBuffers(1, &VBO);//生成一个VBO对象
+    glGenBuffers(1, &VBO);//生成一个VBO对象
     // bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
     glBindVertexArray(VAO);
     glBindBuffer(GL_ARRAY_BUFFER, VBO);//将新创建的缓冲绑定到GL_ARRAY_BUFFER目标上
@@ -108,7 +108,7 @@ int main()
     glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8*sizeof(float), (void*)(6*sizeof(float)));
     glEnableVertexAttribArray(2);
 
-    // about texture
+    // first texture about texture
     unsigned int texture, texture2;
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
@@ -120,7 +120,7 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     // load texture
     int width, height, nrChannels;
-    unsigned char *data = stbi_load("../resources/container.jpg", &width, &height, &nrChannels, 0);
+    unsigned char *data = stbi_load("../../resources/container.jpg", &width, &height, &nrChannels, 0);
     if(data) {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
@@ -130,6 +130,7 @@ int main()
     }
     stbi_image_free(data);
 
+    // seconed texture
     glGenTextures(1, &texture2);
     glBindTexture(GL_TEXTURE_2D, texture2);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
@@ -137,7 +138,7 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     stbi_set_flip_vertically_on_load(true);
-    data = stbi_load("../resources/awesomeface.png", &width, &height, &nrChannels, 0);
+    data = stbi_load("../../resources/awesomeface.png", &width, &height, &nrChannels, 0);
     if(data) {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);

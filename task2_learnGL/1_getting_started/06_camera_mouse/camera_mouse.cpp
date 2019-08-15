@@ -2,13 +2,13 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <cmath>
-#include "../tools_src/shader.h"
+#include "../../tools_src/shader.h"
 #define STB_IMAGE_IMPLEMENTATION
-#include "../third_part_src/stb_image.h"
+#include "../../third_part_src/stb_image.h"
 
-#include "../third_part_src/glm/glm.hpp"
-#include "../third_part_src/glm/gtc/matrix_transform.hpp"
-#include "../third_part_src/glm/gtc/type_ptr.hpp"
+#include "../../third_part_src/glm/glm.hpp"
+#include "../../third_part_src/glm/gtc/matrix_transform.hpp"
+#include "../../third_part_src/glm/gtc/type_ptr.hpp"
 
 
 using namespace std;

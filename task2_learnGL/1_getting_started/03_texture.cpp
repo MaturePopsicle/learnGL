@@ -2,9 +2,9 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <cmath>
-#include "tools_src/shader.h"
+#include "../tools_src/shader.h"
 #define STB_IMAGE_IMPLEMENTATION
-#include "third_part_src/stb_image.h"
+#include "../third_part_src/stb_image.h"
 
 
 using namespace std;
@@ -50,7 +50,7 @@ int main()
     //设置线框模式
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-    Shader *m_shader = new Shader("./tools_src/shader.vs", "./tools_src/shader.fs");
+    Shader *m_shader = new Shader("../tools_src/shader.vs", "../tools_src/shader.fs");
     unsigned int shaderProgram = m_shader->getProgramID();
     cout << "shader program: " << shaderProgram << endl;
 
@@ -63,14 +63,17 @@ int main()
      0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // 右上
      0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // 右下
     -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // 左下
-    -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f    // 左上
+    -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f,   // 左上
+    //add by Sam 2019-07-25
+    0.0f, 0.8f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f
 };
 
 
 
     unsigned int indices[] = { // 注意索引从0开始! 
         0, 1, 3, // 第一个三角形
-        1, 2, 3  // 第二个三角形
+        1, 2, 3,  // 第二个三角形
+        3, 0, 4
     };
 
     unsigned int VBO;//顶点缓冲对象 vertex buffer objects
@@ -91,7 +94,7 @@ int main()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     // load texture
     int width, height, nrChannels;
-    unsigned char *data = stbi_load("./resources/container.jpg", &width, &height, &nrChannels, 0);
+    unsigned char *data = stbi_load("../resources/container.jpg", &width, &height, &nrChannels, 0);
     if(data) {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
@@ -135,7 +138,7 @@ int main()
 
     glBindTexture(GL_TEXTURE_2D, texture);
     glBindVertexArray(VAO);
-    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);
 
     // You can unbind the VAO afterwards so other VAO calls won't accidentally modify this VAO, but this rarely happens. Modifying other
     // VAOs requires a call to glBindVertexArray anyways so we generally don't unbind VAOs (nor VBOs) when it's not directly necessary.
@@ -176,7 +179,7 @@ int main()
 
         glBindVertexArray(VAO); // seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
         //glDrawArrays(GL_TRIANGLES, 0, 3);
-        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+        glDrawElements(GL_TRIANGLES, 9, GL_UNSIGNED_INT, 0);
         //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         // glBindVertexArray(0); // no need to unbind it every time 
  

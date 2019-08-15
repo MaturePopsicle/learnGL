@@ -3,6 +3,7 @@
 #include <iostream>
 #include <cmath>
 #include "../../tools_src/shader.h"
+
 #define STB_IMAGE_IMPLEMENTATION
 #include "../../third_part_src/stb_image.h"
 
@@ -21,8 +22,13 @@ const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
 
-
-int main()
+/**
+ * [main description]
+ * @param  argc [description]
+ * @param  argv [description]
+ * @return      [description]
+ */
+int main(int argc, char *argv[])
 {
     // glfw: initialize and configure
     // ------------------------------
@@ -58,12 +64,12 @@ int main()
     unsigned int shaderProgram = m_shader->getProgramID();
     cout << "shader program: " << shaderProgram << endl;
 
-/**********************************************/
+
     //顶点缓冲对象
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
     float vertices[] = {
-//     ---- 位置 ----   - 纹理坐标 -
+    // ---- 位置 ----   - 纹理坐标 -
      0.5f,  0.5f, 0.0f, 1.0f, 1.0f,   // 右上
      0.5f, -0.5f, 0.0f, 1.0f, 0.0f,   // 右下
     -0.5f, -0.5f, 0.0f, 0.0f, 0.0f,   // 左下
@@ -152,8 +158,10 @@ int main()
     m_shader->setInt("ourTexture2", 1);
     
 
-    
-/**********************************************/
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture1);
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, texture2);
 
 
 
@@ -175,20 +183,17 @@ int main()
         // input
         processInput(window);
         // clear window
-        glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, texture1);
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, texture2);
+        
 
         glm::mat4 trans;
         #if 0
         trans = glm::rotate(trans, glm::radians(90.0f), glm::vec3(0.0, 0.0, 1.0));
         trans = glm::scale(trans, glm::vec3(0.5, 0.5, 0.5)); 
         #else
-        trans = glm::translate(trans, glm::vec3(0.5f, -0.5f,0.0f));
+        trans = glm::translate(trans, glm::vec3(0.5f, 0.5f,0.0f));
         trans = glm::rotate(trans, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
         #endif
 
@@ -202,6 +207,14 @@ int main()
         glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
         // glBindVertexArray(0); // no need to unbind it every time 
+
+        glm::mat4 trans2;
+        trans2 = glm::translate(trans2, glm::vec3(-0.5f, -0.5f,0.0f));
+        trans2 = glm::rotate(trans2, (float)glfwGetTime(), glm::vec3(0.0f, 0.0f, 1.0f));
+        m_shader->use();
+        transformLoc = glGetUniformLocation(m_shader->ID, "transform");
+        glUniformMatrix4fv(transformLoc, 1, GL_FALSE, glm::value_ptr(trans2));
+        glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
  
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         // -------------------------------------------------------------------------------

@@ -1,19 +1,21 @@
 #ifndef _SIMPLE_MODEL_H
 #define _SIMPLE_MODEL_H
 /*
- * 这只是一个示例的简单obj加载类                                                                     
+ * 这只是一个示例的简单obj加载类
  */
 #include <glad/glad.h>
-#include "../../third_part_src/glm/glm.hpp"
-#include "../../third_part_src/glm/gtc/matrix_transform.hpp"
-#include "../../third_part_src/glm/gtx/string_cast.hpp"
-#include <string>       
+#include "../../../third_part_src/glm/glm.hpp"
+#include "../../../third_part_src/glm/gtc/matrix_transform.hpp"
+#include "../../../third_part_src/glm/gtx/string_cast.hpp"
+#include <string>
 #include <vector>
 #include <fstream>
 #include <sstream>
 #include <algorithm>
 #include "simple_shader.h"
 
+
+#define CAR_SCALE_X	1
 
 // 表示一个顶点属性
 struct Vertex
@@ -50,7 +52,7 @@ public:
 	}
 	Mesh(){}
     // 构造一个Mesh
-	Mesh(const std::vector<Vertex>& vertData, GLint textureId) 
+	Mesh(const std::vector<Vertex>& vertData, GLint textureId)
 	{
 		this->vertData = vertData;
 		this->textureId = textureId;
@@ -98,11 +100,16 @@ public:
 	static bool loadFromFile(const char* path,
 		std::vector<Vertex>& vertData)
 	{
-		
+
 		std::vector<VertexCombineIndex> vertComIndices;
 		std::vector<glm::vec3> temp_vertices;
 		std::vector<glm::vec2> temp_textCoords;
 		std::vector<glm::vec3> temp_normals;
+
+		unsigned int vt_cnt = 0;
+		unsigned int vn_cnt = 0;
+		unsigned int v_cnt = 0;
+		unsigned int f_cnt = 0;
 
 		std::ifstream file(path);
 		if (!file)
@@ -118,10 +125,13 @@ public:
 			{
 				std::istringstream s(line.substr(2));
 				glm::vec2 v;
-				s >> v.x; 
+				s >> v.x;
 				s >> v.y;
 				v.y = -v.y;  // 注意这里加载的dds纹理 要对y进行反转
 				temp_textCoords.push_back(v);
+
+				// std::cout << line << std::endl;
+				vt_cnt++;
 			}
 			else if (line.substr(0, 2) == "vn") // 顶点法向量数据
 			{
@@ -129,13 +139,18 @@ public:
 				glm::vec3 v;
 				s >> v.x; s >> v.y; s >> v.z;
 				temp_normals.push_back(v);
+				vn_cnt++;
 			}
 			else if (line.substr(0, 1) == "v") // 顶点位置数据
 			{
 				std::istringstream s(line.substr(2));
 				glm::vec3 v;
 				s >> v.x; s >> v.y; s >> v.z;
+				// v.x = v.x / CAR_SCALE_X;
+				// v.y = v.y / CAR_SCALE_X;
+				// v.z = v.z / CAR_SCALE_X;
 				temp_vertices.push_back(v);
+				v_cnt++;
 			}
 			else if (line.substr(0, 1) == "f") // 面数据
 			{
@@ -155,16 +170,17 @@ public:
 					ivtn >> vertComIndex.posIndex
 						>> vertComIndex.textCoordIndex
 						>> vertComIndex.normIndex;
-					
+
 					vertComIndex.posIndex--;
 					vertComIndex.textCoordIndex--;
 					vertComIndex.normIndex--;
 					vertComIndices.push_back(vertComIndex);
 				}
+				f_cnt++;
 			}
 			else if (line[0] == '#') // 注释忽略
 			{ }
-			else  
+			else
 			{
 				// 其余内容 暂时不处理
 			}
@@ -179,10 +195,24 @@ public:
 			vert.normal = temp_normals[comIndex.normIndex];
 
 			vertData.push_back(vert);
+
+			// std::cout << "vertices: (" << vert.position.x << ", " << vert.position.y
+			// 	<< ", " << vert.position.z  << ")" << std::endl;
 		}
+
+		std::cout << "vt_cnt: " << vt_cnt << std::endl;
+		std::cout << "vn_cnt: " << vn_cnt << std::endl;
+		std::cout << "v_cnt:  " << v_cnt << std::endl;
+		std::cout << "f_cnt:  " << f_cnt << std::endl;
 
 		return true;
 	}
+
+// private:
+// 	unsigned int vt_cnt;
+// 	unsigned int vn_cnt;
+// 	unsigned int v_cnt;
+// 	unsigned int f_cnt;
 };
 
 
