@@ -20,7 +20,7 @@ enum Camera_Movement {
 // 定义预设常量
 const GLfloat YAW = 0.0f;
 const GLfloat PITCH = 10.0f;
-const GLfloat SPEED = 2.0f;
+const GLfloat SPEED = 2000.0f;
 const GLfloat MOUSE_SENSITIVTY = 0.05f;
 const GLfloat MOUSE_ZOOM = 999.0f;
 const float  MAX_PITCH_ANGLE = 89.0f; // 防止万向锁
@@ -31,16 +31,56 @@ public:
 	Camera(glm::vec3 pos = glm::vec3(0.0, 0.0, 1000.0),
 		glm::vec3 up = glm::vec3(0.0, 1.0, 0.0),
 		GLfloat yaw = YAW, GLfloat pitch = PITCH)
-		:position(pos), forward(0.0, 0.0, -1.0), viewUp(up),
+		:position(pos), forward(0.0, 0.0, 0.0), viewUp(up),
 		moveSpeed(SPEED), mouse_zoom(45.0f), mouse_sensitivity(MOUSE_SENSITIVTY),
 		yawAngle(yaw), pitchAngle(pitch)
 	{
 		this->updateCameraVectors();
 	}
+
+	Camera(glm::vec3 pos, glm::vec3 forwd, glm::vec3 up):
+		position(pos), forward(forwd), viewUp(up),
+		moveSpeed(SPEED), mouse_zoom(45.0f), mouse_sensitivity(MOUSE_SENSITIVTY),
+		yawAngle(YAW), pitchAngle(PITCH)
+	{
+		//this->updateCameraVectors();
+		glm::vec3 side;
+		side.x = cos(glm::radians(this->yawAngle));
+		side.y = 0;
+		side.z = -sin(glm::radians(this->yawAngle));
+		this->side = glm::normalize(side);
+	}
+
 public:
+	// change view matrix
+	glm::vec3 change_position_sphere()
+	{
+	 	GLfloat radius = 6000.0f;
+	    GLfloat theta = glfwGetTime(), phi = glfwGetTime() / 2.0f;
+	    GLfloat xPos = radius * sin(theta) * cos(phi);
+	    GLfloat yPos = radius * sin(theta) * sin(phi);
+	    GLfloat zPos = radius * cos(theta);
+    	return glm::vec3(xPos, yPos, zPos);
+	}
+
+	glm::vec3 change_position_circle()
+	{
+		GLfloat radius = 6000.0f;
+	    GLfloat xPos = radius * cos(glfwGetTime());
+	    GLfloat zPos = radius * sin(glfwGetTime());
+	    return glm::vec3(xPos, 0.0f, zPos);
+	}
+
+
 	// 获取视变换矩阵
 	glm::mat4 getViewMatrix()
 	{
+		#if 0
+		//add for change view
+		//this->position = change_position_sphere();
+		this->position = change_position_circle();
+		#endif
+
 		return glm::lookAt(this->position, this->position + this->forward, this->viewUp);
 	}
 	// 处理键盘按键后方向移动
@@ -68,7 +108,6 @@ public:
 	// 处理鼠标移动
 	void handleMouseMove(GLfloat xoffset, GLfloat yoffset)
 	{
-
 		xoffset *= this->mouse_sensitivity; // 用鼠标灵敏度调节角度变换
 		yoffset *= this->mouse_sensitivity;
 

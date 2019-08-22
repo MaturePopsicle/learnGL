@@ -57,6 +57,7 @@ public:
 		this->vertData = vertData;
 		this->textureId = textureId;
 		this->setupMesh();
+		printf("[---] this->VAOId:%d this->VBOId:%d\n", this->VAOId, this->VBOId);
 	}
 	~Mesh()
 	{

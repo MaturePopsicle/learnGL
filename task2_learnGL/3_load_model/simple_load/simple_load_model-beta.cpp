@@ -22,6 +22,7 @@
 
 //#define LOAD_RABIT
 #define LOAD_CAR
+//#define ALL_LAOD
 
 
 // 包含着色器加载库
@@ -41,6 +42,7 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 void mouse_move_callback(GLFWwindow* window, double xpos, double ypos);
 // 鼠标滚轮回调函数原型声明
 void mouse_scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+
 
 // 场景中移动
 void do_movement();
@@ -65,215 +67,236 @@ bool firstMouseMove = true;
 bool keyPressedStatus[1024]; // 按键情况记录
 GLfloat deltaTime = 0.0f; // 当前帧和上一帧的时间差
 GLfloat lastFrame = 0.0f; // 上一帧时间
-Camera camera(glm::vec3(0.0f, 0.0f, 10.0f));
-
-
 
 glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 6000.0f);
 glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
+//Camera camera(glm::vec3(0.0f, 0.0f, 10.0f));
+Camera camera(cameraPos, cameraFront, cameraUp);
+
 
 int main(int argc, char** argv)
 {
 
-	if (!glfwInit())	// 初始化glfw库
-	{
-		std::cout << "Error::GLFW could not initialize GLFW!" << std::endl;
-		return -1;
-	}
+    if (!glfwInit())    // 初始化glfw库
+    {
+        std::cout << "Error::GLFW could not initialize GLFW!" << std::endl;
+        return -1;
+    }
 
-	// 开启OpenGL 3.3 core profile
-	std::cout << "Start OpenGL core profile version 3.3" << std::endl;
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-	glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+    // 开启OpenGL 3.3 core profile
+    std::cout << "Start OpenGL core profile version 3.3" << std::endl;
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
 
-	// 创建窗口
-	GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT,
-		"Demo of loading obj model", NULL, NULL);
-	if (!window)
-	{
-		std::cout << "Error::GLFW could not create winddow!" << std::endl;
-		glfwTerminate();
-		return -1;
-	}
-	// 创建的窗口的context指定为当前context
-	glfwMakeContextCurrent(window);
+    // 创建窗口
+    GLFWwindow* window = glfwCreateWindow(WINDOW_WIDTH, WINDOW_HEIGHT,
+        "Demo of loading obj model", NULL, NULL);
+    if (!window)
+    {
+        std::cout << "Error::GLFW could not create winddow!" << std::endl;
+        glfwTerminate();
+        return -1;
+    }
+    // 创建的窗口的context指定为当前context
+    glfwMakeContextCurrent(window);
 
-	// 注册窗口键盘事件回调函数
-	glfwSetKeyCallback(window, key_callback);
-	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-	// 注册鼠标事件回调函数
-	// glfwSetCursorPosCallback(window, mouse_move_callback);
-	// 注册鼠标滚轮事件回调函数
-	glfwSetScrollCallback(window, mouse_scroll_callback);
-	// 鼠标捕获 停留在程序内
-	//glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-	//
+    // 注册窗口键盘事件回调函数
+    glfwSetKeyCallback(window, key_callback);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    // 注册鼠标事件回调函数
+    glfwSetCursorPosCallback(window, mouse_move_callback);
+    // 注册鼠标滚轮事件回调函数
+    glfwSetScrollCallback(window, mouse_scroll_callback);
+    // 鼠标捕获 停留在程序内
+    //glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    //
 
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-	// 初始化GLEW 获取OpenGL函数
-	// glewExperimental = GL_TRUE; // 让glew获取所有拓展函数
-	// GLenum status = glewInit();
-	// if (status != GLEW_OK)
-	// {
-	// 	std::cout << "Error::GLEW glew version:" << glewGetString(GLEW_VERSION)
-	// 		<< " error string:" << glewGetErrorString(status) << std::endl;
-	// 	glfwTerminate();
-	// 	return -1;
-	// }
+    // 初始化GLEW 获取OpenGL函数
+    // glewExperimental = GL_TRUE; // 让glew获取所有拓展函数
+    // GLenum status = glewInit();
+    // if (status != GLEW_OK)
+    // {
+    //  std::cout << "Error::GLEW glew version:" << glewGetString(GLEW_VERSION)
+    //      << " error string:" << glewGetErrorString(status) << std::endl;
+    //  glfwTerminate();
+    //  return -1;
+    // }
 
-	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
     {
         std::cout << "Failed to initialize GLAD" << std::endl;
         return -1;
     }
 
-	// 设置视口参数
-	glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
+    // 设置视口参数
+    glViewport(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
 
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-	//Section1 从obj文件加载数据
-	std::vector<Vertex> vertData;
-	// if (!ObjLoader::loadFromFile("../cube/cube.obj", vertData))
-	// if (!ObjLoader::loadFromFile("./nanosuit.obj", vertData))
+    //Section1 从obj文件加载数据
+    std::vector<Vertex> vertData;
+    // if (!ObjLoader::loadFromFile("../cube/cube.obj", vertData))
+    // if (!ObjLoader::loadFromFile("./nanosuit.obj", vertData))
 #ifdef LOAD_CAR
-	if (!ObjLoader::loadFromFile("./models/car/car3dw.obj", vertData))
+    if (!ObjLoader::loadFromFile("./models/car/car3da.obj", vertData))
 #endif
 #ifdef LOAD_RABIT
-	if (!ObjLoader::loadFromFile("./models/Rabbit/Rabbit.obj", vertData))
+    if (!ObjLoader::loadFromFile("./models/Rabbit/Rabbit.obj", vertData))
 #endif
-	{
-		std::cerr << "Could not load obj model, exit now.";
-		std::system("pause");
-		exit(-1);
-	}
-	// Section2 准备纹理
+    {
+        std::cerr << "Could not load obj model, exit now.";
+        std::system("pause");
+        exit(-1);
+    }
+    // Section2 准备纹理
 #ifdef LOAD_CAR
-	GLint textureId = load_textrue("./models/car/qichen.png");
+    GLint textureId = load_textrue("./models/car/qichen.png");
 #endif
 #ifdef LOAD_RABIT
-	GLint textureId = load_textrue("./models/Rabbit/Rabbit_D.tga");
+    GLint textureId = load_textrue("./models/Rabbit/Rabbit_D.tga");
 #endif
 
 
-	/************************* load wheel and light *****************************/
-	std::vector<Vertex> vertData_wheel;
-	std::vector<Vertex> vertData_light;
+    /************************* load wheel and light *****************************/
+    std::vector<Vertex> vertData_wheel;
+    std::vector<Vertex> vertData_light;
 
-	if (!ObjLoader::loadFromFile("./models/car/car3dw.obj", vertData_wheel))
-	{
-		std::cerr << "Could not load obj model, exit now.";
-		std::system("pause");
-		exit(-1);
-	}
-	if (!ObjLoader::loadFromFile("./models/car/car3dd.obj", vertData_wheel))
-	{
-		std::cerr << "Could not load obj model, exit now.";
-		std::system("pause");
-		exit(-1);
-	}
+    if (!ObjLoader::loadFromFile("./models/car/car3dw.obj", vertData_wheel))
+    {
+        std::cerr << "Could not load obj model, exit now.";
+        std::system("pause");
+        exit(-1);
+    }
+    if (!ObjLoader::loadFromFile("./models/car/car3dd.obj", vertData_light))
+    {
+        std::cerr << "Could not load obj model, exit now.";
+        std::system("pause");
+        exit(-1);
+    }
 
 
-	// Section3 建立Mesh对象
-	Mesh mesh(vertData, textureId);
-	//Mesh mesh(vertData, 0);
+
+    // Section3 建立Mesh对象
+    Mesh mesh(vertData, textureId);
+    Mesh mesh_wheel(vertData_wheel, textureId);
+    Mesh mesh_light(vertData_light, textureId);
+
 
 #ifdef ALL_LAOD
-	unsigned int VAO_wheel;
-	unsigned int VBO_wheel;
-	glGenVertexArrays(1, &VAO_wheel);
-	glGenBuffers(1, &VBO_wheel);
-	glBindVertexArray(VAO_wheel);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO_wheel);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex)*(vertData_wheel.size()),
-		&vertData_wheel[0], GL_STATIC_DRAW);
-	glVertexAttribPointer(VAO_wheel, 3, GL_FLOAT, GL_FALSE,
-			sizeof(Vertex), (GLvoid*)0);
-	glEnableVertexAttribArray(VAO_wheel);
+    unsigned int VAO_wheel;
+    unsigned int VBO_wheel;
+    glGenVertexArrays(1, &VAO_wheel);
+    glGenBuffers(1, &VBO_wheel);
+    glBindVertexArray(VAO_wheel);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_wheel);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex)*(vertData_wheel.size()),
+        &vertData_wheel[0], GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE,
+            sizeof(Vertex), (GLvoid*)0);
+    glEnableVertexAttribArray(0);
+    glBindVertexArray(0);
 
-	unsigned int VAO_light;
-	unsigned int VBO_light;
-	glGenVertexArrays(1, &VAO_light);
-	glGenBuffers(1, &VBO_light);
-	glBindVertexArray(VAO_light);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO_light);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex)*(vertData_light.size()),
-		&vertData_light[0], GL_STATIC_DRAW);
-	glVertexAttribPointer(VAO_light, 3, GL_FLOAT, GL_FALSE,
-			sizeof(Vertex), (GLvoid*)0);
-	glEnableVertexAttribArray(VAO_light);
+    unsigned int VAO_light;
+    unsigned int VBO_light;
+    glGenVertexArrays(1, &VAO_light);
+    glGenBuffers(1, &VBO_light);
+    glBindVertexArray(VAO_light);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO_light);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Vertex)*(vertData_light.size()),
+        &vertData_light[0], GL_STATIC_DRAW);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE,
+            sizeof(Vertex), (GLvoid*)0);
+    glEnableVertexAttribArray(0);
+    glBindVertexArray(0);
 
 
-	printf("[---] VAO_light:%d VBO_light:%d\n", VAO_light, VBO_light);
-	printf("[---] VA0_light:%d VBO_light:%d\n", VAO_wheel, VBO_wheel);
+    printf("[---] VAO_light:%d VBO_light:%d\n", VAO_light, VBO_light);
+    printf("[---] VAO_wheel:%d VBO_wheel:%d\n", VAO_wheel, VBO_wheel);
+    printf("[---] VAO_mesh :%d VBO_mesh :%d\n", mesh.VAOId, mesh.VBOId);
 #endif
 
-	//wheel positions
-	glm::vec3 wheel_positions[] = {
-		glm::vec3(835.979f, 1535.782f, 345.872f), //wheel_RF
+    //wheel positions
+    glm::vec3 wheel_positions[] = {
+        glm::vec3(835.979f, 1535.782f, 345.872f), //wheel_RF
         glm::vec3(835.979f, -1409.863f, 345.872f), //wheel_RB
         glm::vec3(-847.535f, 1535.782f, 345.872f), //wheel_LF
         glm::vec3(-847.535f, -1409.863f, 345.872f) //wheel_LB
 
-	};
+    };
 
-	/************************ add wheel and light vertices ****************/
+    /************************ add wheel and light vertices ****************/
 
 
 
-	// Section4 准备着色器程序
-	Shader shader("./shaders/simple_cube.vert", "./shaders/simple_cube.frag");
+    // Section4 准备着色器程序
+    Shader shader("./shaders/simple_cube.vert", "./shaders/simple_cube.frag");
 
-	glEnable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
 
-	// bool rotaOne = true;
-	//glEnable(GL_CULL_FACE);
-	// 开始游戏主循环
-	while (!glfwWindowShouldClose(window))
-	{
-		GLfloat currentFrame = (GLfloat)glfwGetTime();
-		deltaTime = currentFrame - lastFrame;
-		lastFrame = currentFrame;
-		glfwPollEvents(); // 处理例如鼠标 键盘等事件
-		do_movement(); // 根据用户操作情况 更新相机属性
+    // bool rotaOne = true;
+    //glEnable(GL_CULL_FACE);
+    // 开始游戏主循环
+    while (!glfwWindowShouldClose(window))
+    {
+        GLfloat currentFrame = (GLfloat)glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
+        glfwPollEvents(); // 处理例如鼠标 键盘等事件
+        do_movement(); // 根据用户操作情况 更新相机属性
 
-		// 清除颜色缓冲区 重置为指定颜色
-		glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        // 清除颜色缓冲区 重置为指定颜色
+        glClearColor(0.1f, 0.2f, 0.3f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		shader.use();
-#if 0
-		glm::mat4 projection = glm::perspective(camera.mouse_zoom,
-			(GLfloat)(WINDOW_WIDTH) / WINDOW_HEIGHT, 0.1f, 10000.0f); // 投影矩阵
-		glm::mat4 view = camera.getViewMatrix(); // 视变换矩阵
-		glUniformMatrix4fv(glGetUniformLocation(shader.programId, "projection"),
-			1, GL_FALSE, glm::value_ptr(projection));
-		glUniformMatrix4fv(glGetUniformLocation(shader.programId, "view"),
-			1, GL_FALSE, glm::value_ptr(view));
-		glm::mat4 model;
+        shader.use();
+#if 1
+        glm::mat4 projection = glm::perspective(camera.mouse_zoom,
+            (GLfloat)(WINDOW_WIDTH) / WINDOW_HEIGHT, 0.1f, 10000.0f); // 投影矩阵
+         glUniformMatrix4fv(glGetUniformLocation(shader.programId, "projection"),
+            1, GL_FALSE, glm::value_ptr(projection));
+
+
+        // change the view matrix
+        glm::mat4 view = camera.getViewMatrix(); // 视变换矩阵
+        glUniformMatrix4fv(glGetUniformLocation(shader.programId, "view"),
+            1, GL_FALSE, glm::value_ptr(view));
+
+
+        glm::mat4 model;
 #ifdef LOAD_CAR
-		float angle = -60.0f;
-		model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-		//model = glm::rotate(model, (float)glfwGetTime() * glm::radians(angle),
-		// 	glm::vec3(0.0f, 0.0f, 1.0f));
+        // float angle = -60.0f;
+        // model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.0f, 0.0f));
+        // model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+        //model = glm::rotate(model, (float)glfwGetTime() * glm::radians(angle),
+        //  glm::vec3(0.0f, 0.0f, 1.0f));
 #endif
 #ifdef LOAD_RABIT
-		float angle = -60.0f;
-		//model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.0f, 0.0f));
-		model = glm::rotate(model, (float)glfwGetTime() * glm::radians(angle),
-		 	glm::vec3(0.0f, 1.0f, 0.0f));
+        float angle = -60.0f;
+        //model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.0f, 0.0f));
+        model = glm::rotate(model, (float)glfwGetTime() * glm::radians(angle),
+            glm::vec3(0.0f, 1.0f, 0.0f));
 #endif
 #endif
 
+#if 0
+        glm::mat4 model;
+        // float angle = -60.0f;
+        // model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.0f, 0.0f));
+        // model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
+        // model = glm::rotate(model, (float)glfwGetTime() * glm::radians(angle),
+        //  glm::vec3(0.0f, 0.0f, 1.0f));
 
-     	glm::mat4 view;
+
+        glm::mat4 view;
         view = glm::lookAt(cameraPos, cameraPos+cameraFront, cameraUp);
+
+
         glm::mat4 projection;
         projection = glm::perspective(glm::radians(45.0f), 800.0f/600.0f, 0.1f, 10000.0f);
 
@@ -281,6 +304,7 @@ int main(int argc, char** argv)
         glUniformMatrix4fv(viewLoc, 1, GL_FALSE, &view[0][0]);
         unsigned int projeLoc = glGetUniformLocation(shader.programId, "projection");
         glUniformMatrix4fv(projeLoc, 1, GL_FALSE, &projection[0][0]);
+#endif
 
         // glm::mat4 model;
         // //model = glm::translate(model, cubePositions[i]);
@@ -297,36 +321,54 @@ int main(int argc, char** argv)
 
         //model = glm::translate(model, wheel_RF);
         //model = glm::rotate(model, (float)glfwGetTime() * glm::radians(-60.0f),
-        //	glm::vec3(0.0f, 0.0f, 1.0f));
+        //  glm::vec3(0.0f, 0.0f, 1.0f));
         //model = glm::rotate(model, glm::radians(angle), glm::vec3(1.0f, 0.3f, 0.5f));
 
+        /********* draw four wheel *********/
         for(int i=0; i < 4; i++)
         {
-        	glm::mat4 model;
-        	model = glm::translate(model, wheel_positions[i]);
-        	model = glm::scale(model, glm::vec3(0.5f, 0.5f, 0.5f));
-        	unsigned int modelLoc = glGetUniformLocation(shader.programId, "model");
-        	glUniformMatrix4fv(modelLoc, 1, GL_FALSE, glm::value_ptr(model));
+            glm::mat4 model_wheel;
 
+            model_wheel = glm::scale(model_wheel, glm::vec3(0.5f, 0.5f, 0.5f));
+            model_wheel = glm::translate(model_wheel, wheel_positions[i]);
+            model_wheel *= model;
+            unsigned int modelLoc_wheel = glGetUniformLocation(shader.programId, "model");
+            glUniformMatrix4fv(modelLoc_wheel, 1, GL_FALSE, glm::value_ptr(model_wheel));
 
-        	//mesh.draw(shader); // 绘制物体
-        	glBindVertexArray(mesh.VAOId);
-        	glDrawArrays(GL_TRIANGLES, 0, vertData.size());
+            glBindVertexArray(mesh_wheel.VAOId);
+            glDrawArrays(GL_TRIANGLES, 0, mesh_wheel.vertData.size());
+            //mesh.draw(shader); // 绘制物体
         }
 
+        /********* draw car *********/
+        glm::mat4 model_car;
+        model_car = glm::scale(model_car, glm::vec3(0.5f, 0.5f, 0.5f));
+        model_car *= model;
+        unsigned int modelLoc_car = glGetUniformLocation(shader.programId, "model");
+        glUniformMatrix4fv(modelLoc_car, 1, GL_FALSE, glm::value_ptr(model_car));
+        glBindVertexArray(mesh.VAOId);
+        glDrawArrays(GL_TRIANGLES, 0, mesh.vertData.size());
 
-		// glUniformMatrix4fv(glGetUniformLocation(shader.programId, "model"),
-		// 	1, GL_FALSE, glm::value_ptr(model));
+        /********* draw light *********/
+        glm::mat4 model_light;
+        model_light = glm::scale(model_light, glm::vec3(0.5f, 0.5f, 0.5f));
+        model_light *= model;
+        unsigned int modelLoc_light = glGetUniformLocation(shader.programId, "model");
+        glUniformMatrix4fv(modelLoc_light, 1, GL_FALSE, glm::value_ptr(model_light));
+        glBindVertexArray(mesh_light.VAOId);
+        glDrawArrays(GL_TRIANGLES, 0, mesh.vertData.size());
 
-		// 这里填写场景绘制代码
-		// mesh.draw(shader); // 绘制物体
 
-		glfwSwapBuffers(window); // 交换缓存
-		glfwPollEvents();
-	}
-	// 释放资源
-	glfwTerminate();
-	return 0;
+
+        // 这里填写场景绘制代码
+        // mesh.draw(shader); // 绘制物体
+        glBindVertexArray(0);
+        glfwSwapBuffers(window); // 交换缓存
+        glfwPollEvents();
+    }
+    // 释放资源
+    glfwTerminate();
+    return 0;
 }
 
 
@@ -335,45 +377,45 @@ int main(int argc, char** argv)
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	if (key >= 0 && key < 1024)
-	{
-		if (action == GLFW_PRESS)
-			keyPressedStatus[key] = true;
-		else if (action == GLFW_RELEASE)
-			keyPressedStatus[key] = false;
-	}
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-	{
-		glfwSetWindowShouldClose(window, GL_TRUE); // 关闭窗口
-	}
+    if (key >= 0 && key < 1024)
+    {
+        if (action == GLFW_PRESS)
+            keyPressedStatus[key] = true;
+        else if (action == GLFW_RELEASE)
+            keyPressedStatus[key] = false;
+    }
+    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+    {
+        glfwSetWindowShouldClose(window, GL_TRUE); // 关闭窗口
+    }
 }
 
 
 void mouse_move_callback(GLFWwindow* window, double xpos, double ypos)
 {
-	if (firstMouseMove) // 首次鼠标移动
-	{
-		lastX = xpos;
-		lastY = ypos;
-		firstMouseMove = false;
-	}
-	// printf("(%f, %f)\n", xpos, ypos);
+    if (firstMouseMove) // 首次鼠标移动
+    {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouseMove = false;
+    }
+    // printf("(%f, %f)\n", xpos, ypos);
 
-	GLfloat xoffset = xpos - lastX;
-	//GLfloat yoffset = lastY - ypos;
-	GLfloat yoffset = ypos - lastY;
+    GLfloat xoffset = xpos - lastX;
+    //GLfloat yoffset = lastY - ypos;
+    GLfloat yoffset = ypos - lastY;
 
-	lastX = xpos;
-	lastY = ypos;
+    lastX = xpos;
+    lastY = ypos;
 
-	camera.handleMouseMove(xoffset, yoffset);
+    camera.handleMouseMove(xoffset, yoffset);
 }
 
 
 // 由相机辅助类处理鼠标滚轮控制
 void mouse_scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-	camera.handleMouseScroll(yoffset);
+    camera.handleMouseScroll(yoffset);
 }
 
 
@@ -381,14 +423,26 @@ void mouse_scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 void do_movement()
 {
 
-	if (keyPressedStatus[GLFW_KEY_W])
-		camera.handleKeyPress(FORWARD, deltaTime);
-	if (keyPressedStatus[GLFW_KEY_S])
-		camera.handleKeyPress(BACKWARD, deltaTime);
-	if (keyPressedStatus[GLFW_KEY_A])
-		camera.handleKeyPress(LEFT, deltaTime);
-	if (keyPressedStatus[GLFW_KEY_D])
-		camera.handleKeyPress(RIGHT, deltaTime);
+    if (keyPressedStatus[GLFW_KEY_W])
+    {
+        //printf("key GLFW_KEY_W\n");
+        camera.handleKeyPress(FORWARD, deltaTime);
+    }
+    if (keyPressedStatus[GLFW_KEY_S])
+    {
+        //printf("key GLFW_KEY_S\n");
+        camera.handleKeyPress(BACKWARD, deltaTime);
+    }
+    if (keyPressedStatus[GLFW_KEY_A])
+    {
+        //printf("key GLFW_KEY_A\n");
+        camera.handleKeyPress(LEFT, deltaTime);
+    }
+    if (keyPressedStatus[GLFW_KEY_D])
+    {
+        //printf("key GLFW_KEY_D\n");
+        camera.handleKeyPress(RIGHT, deltaTime);
+    }
 }
 
 
@@ -396,115 +450,115 @@ static unsigned int loadDDS(const char * filename)
 {
 
 
-	/* try to open the file */
-	std::ifstream file(filename, std::ios::in | std::ios::binary);
-	if (!file){
-		std::cout << "Error::loadDDs, could not open:"
-			<< filename << "for read." << std::endl;
-		return 0;
-	}
+    /* try to open the file */
+    std::ifstream file(filename, std::ios::in | std::ios::binary);
+    if (!file){
+        std::cout << "Error::loadDDs, could not open:"
+            << filename << "for read." << std::endl;
+        return 0;
+    }
 
-	/* verify the type of file */
-	char filecode[4];
-	file.read(filecode, 4);
-	if (strncmp(filecode, "DDS ", 4) != 0) {
-		std::cout << "Error::loadDDs, format is not dds: "
-			<< filename  << std::endl;
-		file.close();
-		return 0;
-	}
+    /* verify the type of file */
+    char filecode[4];
+    file.read(filecode, 4);
+    if (strncmp(filecode, "DDS ", 4) != 0) {
+        std::cout << "Error::loadDDs, format is not dds: "
+            << filename  << std::endl;
+        file.close();
+        return 0;
+    }
 
-	/* get the surface desc */
-	char header[124];
-	file.read(header, 124);
+    /* get the surface desc */
+    char header[124];
+    file.read(header, 124);
 
-	unsigned int height = *(unsigned int*)&(header[8]);
-	unsigned int width = *(unsigned int*)&(header[12]);
-	unsigned int linearSize = *(unsigned int*)&(header[16]);
-	unsigned int mipMapCount = *(unsigned int*)&(header[24]);
-	unsigned int fourCC = *(unsigned int*)&(header[80]);
+    unsigned int height = *(unsigned int*)&(header[8]);
+    unsigned int width = *(unsigned int*)&(header[12]);
+    unsigned int linearSize = *(unsigned int*)&(header[16]);
+    unsigned int mipMapCount = *(unsigned int*)&(header[24]);
+    unsigned int fourCC = *(unsigned int*)&(header[80]);
 
 
-	char * buffer = NULL;
-	unsigned int bufsize;
-	/* how big is it going to be including all mipmaps? */
-	bufsize = mipMapCount > 1 ? linearSize * 2 : linearSize;
-	buffer = new char[bufsize];
-	file.read(buffer, bufsize);
-	/* close the file pointer */
-	file.close();
+    char * buffer = NULL;
+    unsigned int bufsize;
+    /* how big is it going to be including all mipmaps? */
+    bufsize = mipMapCount > 1 ? linearSize * 2 : linearSize;
+    buffer = new char[bufsize];
+    file.read(buffer, bufsize);
+    /* close the file pointer */
+    file.close();
 
-	unsigned int components = (fourCC == FOURCC_DXT1) ? 3 : 4;
-	unsigned int format;
-	switch (fourCC)
-	{
-	case FOURCC_DXT1:
-		format = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
-		break;
-	case FOURCC_DXT3:
-		format = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
-		break;
-	case FOURCC_DXT5:
-		format = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
-		break;
-	default:
-		delete[] buffer;
-		return 0;
-	}
+    unsigned int components = (fourCC == FOURCC_DXT1) ? 3 : 4;
+    unsigned int format;
+    switch (fourCC)
+    {
+    case FOURCC_DXT1:
+        format = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
+        break;
+    case FOURCC_DXT3:
+        format = GL_COMPRESSED_RGBA_S3TC_DXT3_EXT;
+        break;
+    case FOURCC_DXT5:
+        format = GL_COMPRESSED_RGBA_S3TC_DXT5_EXT;
+        break;
+    default:
+        delete[] buffer;
+        return 0;
+    }
 
-	// Create one OpenGL texture
-	GLuint textureID;
-	glGenTextures(1, &textureID);
+    // Create one OpenGL texture
+    GLuint textureID;
+    glGenTextures(1, &textureID);
 
-	// "Bind" the newly created texture : all future texture functions will modify this texture
-	glBindTexture(GL_TEXTURE_2D, textureID);
-	glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    // "Bind" the newly created texture : all future texture functions will modify this texture
+    glBindTexture(GL_TEXTURE_2D, textureID);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
-	unsigned int blockSize = (format == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT) ? 8 : 16;
-	unsigned int offset = 0;
+    unsigned int blockSize = (format == GL_COMPRESSED_RGBA_S3TC_DXT1_EXT) ? 8 : 16;
+    unsigned int offset = 0;
 
-	/* load the mipmaps */
-	for (unsigned int level = 0; level < mipMapCount && (width || height); ++level)
-	{
-		unsigned int size = ((width + 3) / 4)*((height + 3) / 4)*blockSize;
-		glCompressedTexImage2D(GL_TEXTURE_2D, level, format, width, height,
-			0, size, buffer + offset);
+    /* load the mipmaps */
+    for (unsigned int level = 0; level < mipMapCount && (width || height); ++level)
+    {
+        unsigned int size = ((width + 3) / 4)*((height + 3) / 4)*blockSize;
+        glCompressedTexImage2D(GL_TEXTURE_2D, level, format, width, height,
+            0, size, buffer + offset);
 
-		offset += size;
-		width /= 2;
-		height /= 2;
+        offset += size;
+        width /= 2;
+        height /= 2;
 
-		// Deal with Non-Power-Of-Two textures. This code is not included in the webpage to reduce clutter.
-		if (width < 1) width = 1;
-		if (height < 1) height = 1;
+        // Deal with Non-Power-Of-Two textures. This code is not included in the webpage to reduce clutter.
+        if (width < 1) width = 1;
+        if (height < 1) height = 1;
 
-	}
+    }
 
-	delete[] buffer;
+    delete[] buffer;
 
-	return textureID;
+    return textureID;
 }
 
 static void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-	glViewport(0, 0, width, height);
+    glViewport(0, 0, width, height);
 }
 
 
 static unsigned int load_textrue(const char * filename)
 {
-	unsigned int texture;
-	int width, height, nrChannels;
+    unsigned int texture;
+    int width, height, nrChannels;
 
-	glGenTextures(1, &texture);
+    glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
-	//stbi_set_flip_vertically_on_load(true);
-	unsigned char *data = stbi_load(filename, &width, &height, &nrChannels, 0);
+    //stbi_set_flip_vertically_on_load(true);
+    unsigned char *data = stbi_load(filename, &width, &height, &nrChannels, 0);
     if(data) {
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
@@ -514,5 +568,5 @@ static unsigned int load_textrue(const char * filename)
     }
     stbi_image_free(data);
 
-	return texture;
+    return texture;
 }
